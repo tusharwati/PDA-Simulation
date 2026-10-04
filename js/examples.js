@@ -1,0 +1,9 @@
+/* examples.js
+   Example PDA library (uses mk() from pda-model.js). */
+const EX={
+anbn:{n:'aⁿbⁿ, n ≥ 1',d:'Push A per a, pop A per b, then move to the accepting state when Z is exposed.',i:'aaabbb',m:()=>mk(['q0','q1','q2'],'q0',['q2'],[['q0','q0','a','Z','AZ'],['q0','q0','a','A','AA'],['q0','q1','b','A',''],['q1','q1','b','A',''],['q1','q2','','Z','Z']])},
+bal:{n:'Balanced parentheses',d:'Push for ( and pop for ). Accept when only Z remains.',i:'(()())',m:()=>mk(['q0','q1'],'q0',['q1'],[['q0','q0','(','Z','AZ'],['q0','q0','(','A','AA'],['q0','q0',')','A',''],['q0','q1','','Z','Z']])},
+wcw:{n:'w c wᴿ, w ∈ {a,b}*',d:'Push w, switch on c, then match the reverse by popping.',i:'abcba',m:()=>{const t=[];for(const X of 'ZAB'){t.push(['q0','q0','a',X,'A'+X],['q0','q0','b',X,'B'+X],['q0','q1','c',X,X])}t.push(['q1','q1','a','A',''],['q1','q1','b','B',''],['q1','q2','','Z','Z']);return mk(['q0','q1','q2'],'q0',['q2'],t)}},
+eq:{n:'#a(w) = #b(w)',d:'The stack holds the surplus of whichever symbol is ahead.',i:'abbaab',m:()=>mk(['q0','q1'],'q0',['q1'],[['q0','q0','a','Z','AZ'],['q0','q0','a','A','AA'],['q0','q0','b','A',''],['q0','q0','b','Z','BZ'],['q0','q0','b','B','BB'],['q0','q0','a','B',''],['q0','q1','','Z','Z']])},
+npal:{n:'wwᴿ (nondeterministic)',d:'Guesses the middle with an ε-move, so the tree branches.',i:'abba',m:()=>{const t=[];for(const X of 'ZAB'){t.push(['q0','q0','a',X,'A'+X],['q0','q0','b',X,'B'+X],['q0','q1','',X,X])}t.push(['q1','q1','a','A',''],['q1','q1','b','B',''],['q1','q2','','Z','Z']);return mk(['q0','q1','q2'],'q0',['q2'],t)}},
+cfg:{n:'Grammar S→aSb|ε as PDA',d:'Stack-based CFG construction, empty-stack acceptance. S is expanded on the stack, terminals are matched.',i:'aabb',m:()=>mk(['q0','q1'],'q0',[],[['q0','q1','','Z','SZ'],['q1','q1','','S','aSb'],['q1','q1','','S',''],['q1','q1','a','a',''],['q1','q1','b','b',''],['q1','q1','','Z','']],'empty')}};

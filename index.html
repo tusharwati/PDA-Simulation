@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>PDA Lab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head><body>
+<header><span class="logo">PDA LAB</span>
+<nav role="tablist"><button data-t="sim" class="on">Simulator</button><button data-t="play">Playground</button><button data-t="quiz">Quiz</button><button data-t="theory">Theory</button></nav>
+<div class="row"><button id="undo" title="Ctrl+Z">Undo</button><button id="redo" title="Ctrl+Y">Redo</button><button id="save" title="Ctrl+S">Save</button><button id="load">Load</button><button id="theme">Theme</button><button id="help">Shortcuts</button></div></header>
+
+<div id="sim"><main>
+<aside>
+<div class="card"><h3>Examples</h3><select id="exs" aria-label="Example PDAs" style="width:100%"></select><p class="mut" id="exd" style="margin:6px 0 0"></p></div>
+<div class="card"><h3>States</h3><div class="row"><button id="addS">Add state</button><button id="setI">Initial</button><button id="setF">Accepting</button><button id="delS">Delete</button></div><p class="mut" id="selinfo" style="margin:6px 0 0">Click a state to select it. Drag to move.</p></div>
+<div class="card"><h3>Add transition</h3><div class="row"><select id="tf" aria-label="From"></select><span>→</span><select id="tt" aria-label="To"></select></div>
+<div class="row" style="margin-top:6px"><label>read <input id="tr" maxlength="1" placeholder="ε"></label><label>pop <input id="tp" maxlength="1" placeholder="ε"></label><label>push <input id="tw" placeholder="ε" style="width:64px"></label></div>
+<p class="mut" style="margin:6px 0">Leave blank for ε. Push string is written top-first: AZ puts A on top.</p><button id="addT">Add transition</button></div>
+<div class="card"><h3>Transitions <span class="mut" id="tcount"></span></h3><div class="scroll" id="tlist"></div></div>
+<div class="card"><h3>Properties</h3><label>Acceptance <select id="mode"><option value="final">Final state</option><option value="empty">Empty stack</option></select></label>
+<p class="mut mono" id="props" style="margin:8px 0 0"></p></div>
+</aside>
+<section>
+<div class="card"><svg id="g" viewBox="0 0 800 420" role="img" aria-label="PDA state diagram"></svg></div>
+<div class="card"><h3>Input</h3><div class="row"><input id="inp" value="aaabbb" style="flex:1;font-family:var(--m)" aria-label="Input string"><label>Max configs <input id="max" type="number" value="5000" style="width:80px"></label></div>
+<div class="row" style="margin-top:8px"><button id="bPlay">▶ Run</button><button id="bBack">◀ Back</button><button id="bStep">Step ▶</button><button id="bStop">Reset</button><button id="bEnd"> End</button><label>Speed <select id="spd"><option value="1600">0.25x</option><option value="800">0.5x</option><option value="400" selected>1x</option><option value="200">2x</option><option value="80">5x</option></select></label></div></div>
+<div class="card"><h3>Execution trace <span class="mut">(click a row to jump)</span></h3><div class="scroll"><table><thead><tr><th>#</th><th>State</th><th>Read</th><th>Remaining</th><th>Stack before</th><th>Transition</th><th>Stack after</th></tr></thead><tbody id="trace"></tbody></table></div></div>
+<div class="card"><h3>Configuration tree <span class="mut">(state, remaining input, stack)</span></h3><div class="scroll" style="max-height:320px" id="tree"></div></div>
+</section>
+<aside>
+<div class="card"><h3>Input tape</h3><div class="tape" id="tape"></div><p class="mut mono" id="tapeinfo" style="margin:6px 0 0"></p></div>
+<div class="card"><h3>Stack <span class="mut">(top first)</span></h3><div class="stack" id="stack"></div><p class="mono" id="stackop" style="margin:8px 0 0"></p></div>
+<div class="card"><h3>Status</h3><div id="status"></div></div>
+<div class="card"><h3>Statistics</h3><div class="mono" id="stats"></div></div>
+<div class="card"><h3>Diagnostics</h3><div id="diag"></div></div>
+</aside></main></div>
+
+<div id="play" class="tabs hide"><div class="card"><h3>Language playground</h3><p class="mut">One string per line (empty line = ε). Uses the PDA currently in the simulator.</p>
+<textarea id="strs" rows="6" style="width:100%;font-family:var(--m)">aabb
+aaabbb
+ab
+aab
+abab</textarea><div class="row" style="margin-top:8px"><button id="testAll">Test all</button><button id="gen">Generate 20 test strings</button></div></div>
+<div class="card"><div class="scroll" style="max-height:none"><table><thead><tr><th>String</th><th>Result</th><th>Steps</th><th>Max stack</th></tr></thead><tbody id="ptab"></tbody></table></div></div></div>
+
+<div id="quiz" class="tabs hide"><div class="card" id="qbox"></div></div>
+
+<div id="theory" class="tabs hide"><div class="card" style="max-width:820px">
+<h3>What is a pushdown automaton?</h3><p>A PDA is a finite automaton with a stack. The stack gives it unbounded memory, but only last-in, first-out access. A DFA cannot check aⁿbⁿ because it cannot count arbitrarily high; a PDA pushes one symbol per a and pops one per b.</p>
+<h3>Formal definition</h3><p class="mono">M = (Q, Σ, Γ, δ, q₀, Z₀, F)<br>δ ⊆ Q × (Σ∪{ε}) × (Γ∪{ε}) × Q × Γ*</p>
+<p>A configuration is (state, remaining input, stack). A move reads an optional input symbol, pops an optional stack symbol, and pushes a string. This tool writes a transition as <span class="mono">read, pop → push</span>.</p>
+<h3>Acceptance</h3><p><b>Final state:</b> all input is consumed and the PDA is in a state of F. <b>Empty stack:</b> all input is consumed and the stack is empty (the initial stack holds Z₀ = Z, so some transition must pop it).</p>
+<h3>Nondeterminism</h3><p>A string is accepted if <i>any</i> branch of the computation accepts. The configuration tree shows every branch the simulator explored, searched breadth-first. Deterministic and nondeterministic PDAs are not equivalent: palindromes wwᴿ need nondeterminism.</p>
+<h3>Relationships</h3><p>PDA ≡ context-free grammar (every CFL has a PDA and vice versa). Compared with DFA/NFA, a PDA adds a stack and recognizes more (aⁿbⁿ). Compared with a Turing machine, it has a restricted stack instead of a freely rewritable tape, so it recognizes fewer languages (aⁿbⁿcⁿ is out of reach).</p>
+<h3>CFG → PDA (construction)</h3><p>For S → aSb | ε: push S; if the top is a variable, replace it by a production body (ε-move); if the top is a terminal matching the input, pop it and consume; accept when the stack is empty. Try the “Grammar S→aSb|ε as PDA” example, which is this construction written out by hand. Automatic conversion of arbitrary grammars is not implemented here.</p></div></div>
+
+<div id="toast" role="status"></div>
+<dialog id="dlg" style="border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:560px;width:92%"><div id="dlgc"></div><p><button onclick="dlg.close()">Close</button></p></dialog>
+
+
+<!-- Classic scripts (not ES modules) so index.html works by double-click. Order matters. -->
+<script src="js/pda-model.js"></script>
+<script src="js/examples.js"></script>
+<script src="js/pda-engine.js"></script>
+<script src="js/validator.js"></script>
+<script src="js/visualizer.js"></script>
+<script src="js/playground.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/app.js"></script>
+</body></html>
